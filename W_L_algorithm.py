@@ -90,7 +90,7 @@ def obtain_label(adj_mat,n_node):
 	return node_sig,label	
 
 if __name__ == "__main__":
-	#input in the form of adjacency list
+	#input in the form of adjacency matrix
 	adj_mat = []
 	fs = open(sys.argv[1])
 	for line in fs:
