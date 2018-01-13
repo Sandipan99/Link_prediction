@@ -73,12 +73,41 @@ int count_common_neighbors(PUNGraph G[], int u, int v, int p, int t_p){  //count
 	return find_intersection(nbr_u,nbr_v);	
 }
 
+std::vector<int> create_node_list(PUNGraph G[], int t, int p){
+	std::vector<int> nodes;
+	TUNGraph::TNodeI NI;
+	for(int i=p;i<=t,i++){
+		 for(NI=G[i]->BegNI();NI!=G[i]->EndNI();NI++)
+			nodes.push_back(NI.GetId());
+	}
+	nodes.erase(std::unique(nodes.begin(),nodes.end()),nodes.end());
+	return nodes;
+}
+
+
+double prediction(PUNGraph G[], int p, int t_p, std::map<std::string,std::vector<int> > link_time){
+	//obtain node set...includes all nodes that appeared at least once till (t_predict-1)
+	int u,v,s_cnt,s_llt;
+	node_list_t = create_node_list(G,time_pred-1);	
+	//create feaure matrix for edges...
+	std::map<int,std::string> 
+	TUNGraph::TEdgeI EI;
+	for(int i=0;i<t_p;i++){  
+		//considering graph G[i]
+		for(EI = G[i]->BegEI();EI!=G[i]->EndEI();EI++){
+			u = EI.GetSrcNId();
+			v = EI.GetDstNId();
+			s_cnt = 
+		}
+	}	 
+}
+
 
 int main (int argc, char* argv[]){
 
 	int u,v,t;
-	int time_of_prediction = 20;
-	std::map<std::string,std::vector<int>> link_time;
+	int time_pred = 20;
+	std::map<std::string,std::vector<int> > link_time;
 	PUNGraph G[24];
 	for(int i=0;i<24;i++)
 		G[i] = TUNGraph::New();
@@ -99,7 +128,7 @@ int main (int argc, char* argv[]){
 				G[t]->AddEdge(u,v);
 		}
 	}
-	in.close();
+	in.close();	
 	return 0;
 }
 
