@@ -84,21 +84,45 @@ std::vector<int> create_node_list(PUNGraph G[], int t, int p){
 	return nodes;
 }
 
+int find_last_link_time(PUNGraph G[], int u, int v, int t){
+	int i = t-1;
+	int ll_t = 0;
+	while(i>=0){
+		ll_t++;
+		if(G[i]->IsEdge(u,v))
+			return ll_t;
+		i--;
+	}
+	return 0;
+}
 
 double prediction(PUNGraph G[], int p, int t_p, std::map<std::string,std::vector<int> > link_time){
 	//obtain node set...includes all nodes that appeared at least once till (t_predict-1)
 	int u,v,s_cnt,s_llt;
+	std::vector<int> nbrs_u;
+	std::vector<int> nbrs_v;
+	std::vector<int> node_list;
+	std::vector<int> node_list_t;
 	node_list_t = create_node_list(G,time_pred-1);	
 	//create feaure matrix for edges...
 	std::map<int,std::string> 
-	TUNGraph::TEdgeI EI;
-	for(int i=0;i<t_p;i++){  
+	for(int i=1;i<t_p;i++){  
 		//considering graph G[i]
-		for(EI = G[i]->BegEI();EI!=G[i]->EndEI();EI++){
-			u = EI.GetSrcNId();
-			v = EI.GetDstNId();
-			s_cnt = 
+		//find node list
+		TUNGraph::TNodeI NI;
+		for(NI=G[i]->BegNI();NI!=G[i]->EndNI();NI++)
+			node_list.push_back(NI.GetId());	
+		for(i=0;i<node_list.size()-1;i++){
+			for(j=i+1;j<node_list.size();j++){
+				u = node_list[i];
+				v = node_list[j];
+				nbrs_u = find_neighbors(G[i],u);
+				nbrs_v = find_neighbors(G[i],v);
+				s_cnt = find_intersection(nbrs_u,nbrs_v);
+				s_llt = find_last_link_time(G,u,v,i);
+			}
 		}
+		node_list.clear();
 	}	 
 }
 
@@ -107,7 +131,7 @@ int main (int argc, char* argv[]){
 
 	int u,v,t;
 	int time_pred = 20;
-	std::map<std::string,std::vector<int> > link_time;
+	//std::map<std::string,std::vector<int> > link_time;
 	PUNGraph G[24];
 	for(int i=0;i<24;i++)
 		G[i] = TUNGraph::New();
@@ -118,8 +142,8 @@ int main (int argc, char* argv[]){
 			continue;
 		else{	
 			t = t-1989;
-			std::string e = std::to_string(u)+","+std::to_string(v);
-			link_time[e].push_back(t);
+			//std::string e = std::to_string(u)+","+std::to_string(v);
+			//link_time[e].push_back(t);
 			if(!G[t]->IsNode(u))
 				G[t]->AddNode(u);
 			if(!G[t]->IsNode(v))
