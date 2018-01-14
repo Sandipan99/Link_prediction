@@ -12,6 +12,24 @@
 #include<vector>
 #include "Snap.h"
 
+public class feat_mat{
+	std::mat<std::string,int> all_pair_feat;
+	std::mat<std::string,int> edge_convert;
+
+	public:
+	void insert_a_p_f(std::string s){
+		if(all_pair_feat.find(s) == all_pair_feat.end())
+			all_pair_feat[s] = 1;
+		else	all_pair_feat[s]++;
+	}
+
+	void insert_e_c(std::string s){
+		if(edge_convert.find(s) == edge_convert.end())
+			edge_convert[s] = 1;
+		else	edge_convert[s]++;
+	}
+	
+};
 
 TUNGraph::TNodeI nodepointer(PUNGraph G, int u){
 	TUNGraph::TNodeI NI = G->BegNI();
@@ -99,10 +117,12 @@ int find_last_link_time(PUNGraph G[], int u, int v, int t){
 double prediction(PUNGraph G[], int p, int t_p, std::map<std::string,std::vector<int> > link_time){
 	//obtain node set...includes all nodes that appeared at least once till (t_predict-1)
 	int u,v,s_cnt,s_llt;
+	feat_mat G_s[t_p+1];
 	std::vector<int> nbrs_u;
 	std::vector<int> nbrs_v;
 	std::vector<int> node_list;
 	std::vector<int> node_list_t;
+	std::string f_str;
 	node_list_t = create_node_list(G,time_pred-1);	
 	//create feaure matrix for edges...
 	std::map<int,std::string> 
@@ -112,18 +132,24 @@ double prediction(PUNGraph G[], int p, int t_p, std::map<std::string,std::vector
 		TUNGraph::TNodeI NI;
 		for(NI=G[i]->BegNI();NI!=G[i]->EndNI();NI++)
 			node_list.push_back(NI.GetId());	
-		for(i=0;i<node_list.size()-1;i++){
-			for(j=i+1;j<node_list.size();j++){
-				u = node_list[i];
-				v = node_list[j];
+		for(j=0;j<node_list.size()-1;j++){
+			for(k=j+1;k<node_list.size();k++){
+				u = node_list[j];
+				v = node_list[k];
 				nbrs_u = find_neighbors(G[i],u);
 				nbrs_v = find_neighbors(G[i],v);
 				s_cnt = find_intersection(nbrs_u,nbrs_v);
 				s_llt = find_last_link_time(G,u,v,i);
+				f_str = std::to_string(s_cnt)+","+std::to_string(s_llt);
+				G_s[i].insert_a_p_f(f_str);
+				if(G[i]->IsEdge(u,v))
+					G_s[i].insert_e_c(f_str);
 			}
 		}
 		node_list.clear();
-	}	 
+	}
+	//predict edges.....
+	 
 }
 
 
