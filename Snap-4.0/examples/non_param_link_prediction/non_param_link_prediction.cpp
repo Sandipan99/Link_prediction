@@ -122,8 +122,7 @@ double prediction(PUNGraph G[], int p, int t_p, std::map<std::string,std::vector
 	std::vector<int> nbrs_v;
 	std::vector<int> node_list;
 	std::vector<int> node_list_t;
-	std::string f_str;
-	node_list_t = create_node_list(G,time_pred-1);	
+	std::string f_str;	
 	//create feaure matrix for edges...
 	std::map<int,std::string> 
 	for(int i=1;i<t_p;i++){  
@@ -149,6 +148,7 @@ double prediction(PUNGraph G[], int p, int t_p, std::map<std::string,std::vector
 		node_list.clear();
 	}
 	//predict edges.....
+	node_list_t = create_node_list(G,time_pred-1);
 	 
 }
 
