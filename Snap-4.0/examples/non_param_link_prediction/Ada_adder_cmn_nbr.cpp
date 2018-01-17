@@ -129,7 +129,7 @@ vec_tup predict_CN(PUNGraph G[], int s, int t_p){
 }
 
 
-vec_tup predict_AA(PUNGraph G[], int s, int t_p){
+vec_tup predict_AA(PUNGraph G[], int t_p, int s){
 	std::vector<int> all_pairs;
 	int u,v;
 	TUNGraph G_t = PUNGraph::New();
