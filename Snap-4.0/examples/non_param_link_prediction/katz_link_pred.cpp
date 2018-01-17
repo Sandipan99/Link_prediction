@@ -1,9 +1,24 @@
+/*
+implements link prediction in dynamic network by Katz 1953 both last and all time
+input: graph stream
+output: predicted links
+@author: Sandipan Sikdar
+*/
+
+
 #include<stdio.h>
 #include<iostream>
-#include<armadillo>
+#include<fstream>
 #include<map>
+#include<string>
+#include<algorithm>
 #include<vector>
+#include<tuple>
+#include<math.h>
+#include<armadillo>
+
 #include "Snap.h"
+
 
 typedef std::vector<std::tuple<int,int,int> > vec_tup;
 
