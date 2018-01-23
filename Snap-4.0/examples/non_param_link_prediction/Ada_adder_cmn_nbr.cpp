@@ -18,7 +18,7 @@ output: predicted links
 
 #include "Snap.h"
 
-typedef std::vector<std::tuple<int,int,int> > vec_tup;
+typedef std::vector<std::tuple<int,int,double> > vec_tup;
 
 TUNGraph::TNodeI nodepointer(PUNGraph G, int u){
 	TUNGraph::TNodeI NI = G->BegNI();
@@ -53,7 +53,7 @@ std::vector<int> find_intersection(std::vector<int> &a, std::vector<int> &b){
 vec_tup pair_score_CN(PUNGraph G, std::vector<int> all_pairs){
 	vec_tup pair_score;
 	std::vector<int> int_node;
-	int score;
+	double score;
 	TUNGraph::TNodeI NI_u, NI_v;
 	for(int i=0;i<all_pairs.size()-1;i++){
 		for(int j=i+1;j<all_pairs.size();j++){
@@ -62,6 +62,8 @@ vec_tup pair_score_CN(PUNGraph G, std::vector<int> all_pairs){
 			int_node = find_intersection(find_neighbors(G,u),find_neighbors(G,v));
 			score = int_node.size();
 			pair_score.push_back(std::make_tuple(u,v,score));
+			pair_score.push_back(std::make_tuple(v,u,score));
+
 		}
 	}
 	return pair_score;
@@ -89,6 +91,7 @@ vec_tup pair_score_AA(PUNGraph G, std::vector<int> all_pairs){
 			int_node = find_intersection_set(find_neighbors(G,u),find_neighbors(G,v));
 			score = calculate_AA_score(G,int_node);
 			pair_score.push_back(std::make_tuple(u,v,score));
+			pair_score.push_back(std::make_tuple(v,u,score));
 		}
 	}
 	return pair_score;
