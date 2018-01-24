@@ -20,7 +20,7 @@ output: predicted links
 #include "Snap.h"
 
 
-typedef std::vector<std::tuple<int,int,int> > vec_tup;
+typedef std::vector<std::tuple<int,int,double> > vec_tup;
 
 vec_tup pair_score_katz(PUNGraph G, std::vector<int> nodes, double beta){
 	vec_tup pair_score;
@@ -59,26 +59,27 @@ vec_tup pair_score_katz(PUNGraph G, std::vector<int> nodes, double beta){
 	for(int i=3;i<p_length;i++){
 		adj_mat_mul = adj_mat_mul * adj_mat;
 		beta*=beta;
-		score_mat = score_mat + adj_mat_mul*beta	
+		score_mat = score_mat + adj_mat_mul*beta;	
 	}
 	for(int i=0;i<s-1;i++){
 		for(int j=i+1;j<s;j++){
-			pair_score.push_back(std::make_tuple(node_id[i],node_id[j],score_mat(i,j)))
+			pair_score.push_back(std::make_tuple(node_id[i],node_id[j],score_mat(i,j)));
+			pair_score.push_back(std::make_tuple(node_id[j],node_id[i],score_mat(i,j)));
 		}
 	}
 	return pair_score;
 
 }
 
-vec_tup predict_katz(PUNGraph G, int t){
+vec_tup predict_katz(PUNGraph G[], int s, int t_p, double beta){
 	std::vector<int> all_pairs;
 	int u,v;
-	TUNGraph G_t = PUNGraph::New();
+	PUNGraph G_t = TUNGraph::New();
 	if(s==0){
 		TUNGraph::TNodeI NI;
 		for(NI=G[t_p-1]->BegNI();NI!=G[t_p-1]->EndNI();NI++)
 			all_pairs.push_back(NI.GetId());
-		 return pair_score_katz(G[t_p-1],all_pairs);	
+		 return pair_score_katz(G[t_p-1],all_pairs,beta);	
 	}
 	else{	
 		for(int i=0;i<t_p;i++){
@@ -98,7 +99,7 @@ vec_tup predict_katz(PUNGraph G, int t){
 					G_t->AddEdge(u,v);
 			}
 		}
-		return pair_score_katz(G_t,all_pairs);
+		return pair_score_katz(G_t,all_pairs,beta);
 	}
 
 }
@@ -106,8 +107,8 @@ vec_tup predict_katz(PUNGraph G, int t){
 
 int main(int argc, char* argv[]){
 	int u,v,t;
-	int time_pred = 20;
-	vec_tup predicted_set_last_katz, predicted_set_all_katz;
+	//int t_p = 20;
+	vec_tup predicted_set_last_katz; //, predicted_set_all_katz;
 	//std::map<std::string,std::vector<int> > link_time;
 	PUNGraph G[24];
 	//PUNGraph G_all = TUNGraph::New();
@@ -120,8 +121,6 @@ int main(int argc, char* argv[]){
 			continue;
 		else{	
 			t = t-1989;
-			//std::string e = std::to_string(u)+","+std::to_string(v);
-			//link_time[e].push_back(t);
 			if(!G[t]->IsNode(u))
 				G[t]->AddNode(u);
 			if(!G[t]->IsNode(v))
@@ -134,8 +133,7 @@ int main(int argc, char* argv[]){
 	}
 	
 	in.close();
-
-	predicted_set_last_katz = predict_katz(G,t_p);
+	//predicted_set_last_katz = predict_katz(G,s,t_p,beta);
 	return 0;
 }
 
