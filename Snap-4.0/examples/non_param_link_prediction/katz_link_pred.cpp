@@ -34,9 +34,11 @@ vec_tup pair_score_katz(PUNGraph G, std::vector<int> nodes, double beta){
 		id_node[*it] = cnt;
 		cnt++;
 	}
-	int s = nodes.size();
+	int s = nodes.size();	
 	// creating the adjacency matrix...
-	arma::mat adj_mat(s,s);
+	arma::sp_mat adj_mat(s,s);
+	adj_mat.zeros();
+	std::cout<<"creating adjacency matrix" << std::endl;
 	for(int i=0;i<s-1;i++){
 		for(int j=i+1;j<s;j++){
 			u = node_id[i];
@@ -45,17 +47,19 @@ vec_tup pair_score_katz(PUNGraph G, std::vector<int> nodes, double beta){
 				adj_mat(i,j)=1;
 				adj_mat(j,i)=1;
 			}
+			/*
 			else{
 				adj_mat(i,j)=0;
 				adj_mat(j,i)=0; 
-			}
+			}*/
 		}
 	}
 	// calculaing the katz score....
+	std::cout<<"calculating katz scores" << std::endl;
 	int p_length = 5;
 	beta*=beta;
-	arma::mat adj_mat_mul = adj_mat * adj_mat;
-	arma::mat score_mat = adj_mat_mul*beta;
+	arma::sp_mat adj_mat_mul = adj_mat * adj_mat;
+	arma::sp_mat score_mat = adj_mat_mul*beta;
 	for(int i=3;i<p_length;i++){
 		adj_mat_mul = adj_mat_mul * adj_mat;
 		beta*=beta;
@@ -79,7 +83,8 @@ vec_tup predict_katz(PUNGraph G[], int s, int t_p, double beta){
 		TUNGraph::TNodeI NI;
 		for(NI=G[t_p-1]->BegNI();NI!=G[t_p-1]->EndNI();NI++)
 			all_pairs.push_back(NI.GetId());
-		 return pair_score_katz(G[t_p-1],all_pairs,beta);	
+		std::cout << "all pairs size:" << all_pairs.size() << std::endl;
+		return pair_score_katz(G[t_p-1],all_pairs,beta);	
 	}
 	else{	
 		for(int i=0;i<t_p;i++){
@@ -107,11 +112,10 @@ vec_tup predict_katz(PUNGraph G[], int s, int t_p, double beta){
 
 int main(int argc, char* argv[]){
 	int u,v,t;
-	//int t_p = 20;
+	int t_p = 20;
+	double beta = 0.8;
 	vec_tup predicted_set_last_katz; //, predicted_set_all_katz;
-	//std::map<std::string,std::vector<int> > link_time;
 	PUNGraph G[24];
-	//PUNGraph G_all = TUNGraph::New();
 	for(int i=0;i<24;i++)
 		G[i] = TUNGraph::New();
 	std::ifstream in;
@@ -131,9 +135,9 @@ int main(int argc, char* argv[]){
 
 		}
 	}
-	
 	in.close();
-	//predicted_set_last_katz = predict_katz(G,s,t_p,beta);
+	std::cout<< "graph_loaded" << std::endl;
+	predicted_set_last_katz = predict_katz(G,0,t_p,beta);
 	return 0;
 }
 
