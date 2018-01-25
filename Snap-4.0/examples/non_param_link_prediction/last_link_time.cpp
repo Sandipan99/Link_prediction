@@ -18,9 +18,9 @@ output: predicted links
 
 #include "Snap.h"
 
-typedef std::vector<std::tuple<int,int,int> > vec_tup;
+typedef std::vector<std::tuple<int,int,double> > vec_tup;
 
-int find_last_link_time(PUNGraph G[], int u, int v, int t){
+double find_last_link_time(PUNGraph G[], int u, int v, int t){
 	int i = t-1;
 	int ll_t = 0;
 	while(i>=0){
@@ -29,27 +29,36 @@ int find_last_link_time(PUNGraph G[], int u, int v, int t){
 			return ll_t;
 		i--;
 	}
-	return t+1;
+	return (double)(t+1);
 }
 
 
 vec_tup predict_ll(PUNGraph G_t[], int t_p){
 	vec_tup node_pairs;
+	int u,v;
+	double score;
 	std::vector<int> node_list;
 	TUNGraph::TNodeI NI;
-	for(NI=G->BegNI();NI!=G->EndNI();NI++)
+	for(NI=G_t[t_p-1]->BegNI();NI!=G_t[t_p-1]->EndNI();NI++)
 		node_list.push_back(NI.GetId());
 
-	for(int i=0;i<node_list.size()-1;i++){
-		for(int j=i+1;j<node_list.size();j++){
-			node_pairs.push_back(std::make_tuple(u,v,find_last_link_time(G_t,u,v,t_p)))
+	for(int i=0;i<(int)node_list.size()-1;i++){
+		for(int j=i+1;j<(int)node_list.size();j++){
+			u = node_list[i];
+			v = node_list[j];
+			score = find_last_link_time(G_t,u,v,t_p);
+			if(score<21)
+				std::cout << score << std::endl;
+			node_pairs.push_back(std::make_tuple(u,v,score));
+			node_pairs.push_back(std::make_tuple(v,u,score));
 		}
 	}
+	/*
 	std::sort(begin(node_pairs), end(node_pairs), 
     	[](tuple<int, int, int> const &t1, tuple<int, int, int> const &t2) {
         return get<2>(t1) < get<2>(t2); 
     	}
-	);
+	);*/
 	return node_pairs;
 }
 
@@ -70,23 +79,12 @@ int main (int argc, char* argv[]){
 			continue;
 		else{	
 			t = t-1989;
-			//std::string e = std::to_string(u)+","+std::to_string(v);
-			//link_time[e].push_back(t);
 			if(!G[t]->IsNode(u))
 				G[t]->AddNode(u);
 			if(!G[t]->IsNode(v))
 				G[t]->AddNode(v);
 			if(!G[t]->IsEdge(u,v))
 				G[t]->AddEdge(u,v);
-
-			//combine all the graphs upto t
-			/*
-			if(!G_all->IsNode(u))
-				G_all->AddNode(u);
-			if(!G_all->IsNode(v))
-				G_all->AddNode(v);
-			if(!G_all->IsEdge(u,v))
-				G_all->AddEdge(u,v);*/
 
 		}
 	}
