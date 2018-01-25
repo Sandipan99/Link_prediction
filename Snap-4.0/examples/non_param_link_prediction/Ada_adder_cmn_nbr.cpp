@@ -56,13 +56,13 @@ vec_tup pair_score_CN(PUNGraph G, std::vector<int> all_pairs){
 	int u,v;
 	std::vector<int> int_node, nbrs_u, nbrs_v;
 	double score;
-	TUNGraph::TNodeI NI_u, NI_v;
 	for(int i=0;i<(int)all_pairs.size()-1;i++){
 		for(int j=i+1;j<(int)all_pairs.size();j++){
 			u = all_pairs[i];
 			v = all_pairs[j];
 			nbrs_u = find_neighbors(G,u);
 			nbrs_v = find_neighbors(G,v);
+			std::cout << nbrs_u.size() << "," << nbrs_v.size() << std::endl;
 			int_node = find_intersection(nbrs_u,nbrs_v);
 			score = int_node.size();
 			pair_score.push_back(std::make_tuple(u,v,score));
@@ -72,12 +72,12 @@ vec_tup pair_score_CN(PUNGraph G, std::vector<int> all_pairs){
 	}
 	return pair_score;
 }
-/*
+
 int calculate_AA_score(PUNGraph G, std::vector<int> node_list){
 	TUNGraph::TNodeI NI;
 	double sum = 0.0;
-	for(int i=0;i<node_list.size();i++){
-		NI = nodepointer(node_list[i]);
+	for(int i=0;i<(int)node_list.size();i++){
+		NI = nodepointer(G,node_list[i]);
 		sum+=1/log(NI.GetOutDeg());
 	}
 	return sum;
@@ -86,13 +86,16 @@ int calculate_AA_score(PUNGraph G, std::vector<int> node_list){
 vec_tup pair_score_AA(PUNGraph G, std::vector<int> all_pairs){
 	vec_tup pair_score;
 	double score;
-	std::vector<int> int_node;
-	TUNGraph::TNodeI NI_u, NI_v;
-	for(int i=0;i<all_pairs.size()-1;i++){
-		for(int j=i+1;j<all_pairs.size();j++){
+	int u,v;
+	std::vector<int> int_node, nbrs_u, nbrs_v;
+	for(int i=0;i<(int)all_pairs.size()-1;i++){
+		for(int j=i+1;j<(int)all_pairs.size();j++){
 			u = all_pairs[i];
 			v = all_pairs[j];
-			int_node = find_intersection_set(find_neighbors(G,u),find_neighbors(G,v));
+			nbrs_u = find_neighbors(G,u);
+			nbrs_v = find_neighbors(G,v);
+			std::cout << nbrs_u.size() << "," << nbrs_v.size() << std::endl;
+			int_node = find_intersection(nbrs_u,nbrs_v);
 			score = calculate_AA_score(G,int_node);
 			pair_score.push_back(std::make_tuple(u,v,score));
 			pair_score.push_back(std::make_tuple(v,u,score));
@@ -101,16 +104,19 @@ vec_tup pair_score_AA(PUNGraph G, std::vector<int> all_pairs){
 	return pair_score;
 
 }
-*/
+
 vec_tup predict_CN(PUNGraph G[], int s, int t_p){
+	std::cout << "inside predict CN" << std::endl;
 	std::vector<int> all_pairs;
 	int u,v;
 	PUNGraph G_t = TUNGraph::New();
 	if(s==0){
+		std::cout << "executing CN last" << std::endl;
 		TUNGraph::TNodeI NI;
 		for(NI=G[t_p-1]->BegNI();NI!=G[t_p-1]->EndNI();NI++)
 			all_pairs.push_back(NI.GetId());
-		 return pair_score_CN(G[t_p-1],all_pairs);	
+		std::cout << "no of nodes" << all_pairs.size() << std::endl;
+		return pair_score_CN(G[t_p-1],all_pairs);	
 	}
 	else{	
 		for(int i=0;i<t_p;i++){
@@ -135,11 +141,11 @@ vec_tup predict_CN(PUNGraph G[], int s, int t_p){
 	
 }
 
-/*
-vec_tup predict_AA(PUNGraph G[], int t_p, int s){
+
+vec_tup predict_AA(PUNGraph G[], int s, int t_p){
 	std::vector<int> all_pairs;
 	int u,v;
-	TUNGraph G_t = PUNGraph::New();
+	PUNGraph G_t = TUNGraph::New();
 	if(s==0){
 		TUNGraph::TNodeI NI;
 		for(NI=G[t_p-1]->BegNI();NI!=G[t_p-1]->EndNI();NI++)
@@ -168,7 +174,7 @@ vec_tup predict_AA(PUNGraph G[], int t_p, int s){
 	}
 	
 }
-*/
+
 int main(int argc, char *argv[]){
 	
 	int u,v,t;
@@ -196,7 +202,7 @@ int main(int argc, char *argv[]){
 	}
 	in.close();	
 
-	predicted_set_last_CN = predict_CN(G, time_pred, 0);
+	predicted_set_last_CN = predict_AA(G, 1, time_pred);
 	//predicted_set_all_CN = predict_CN(G, time_pred, 1);
 	return 0;
 }
