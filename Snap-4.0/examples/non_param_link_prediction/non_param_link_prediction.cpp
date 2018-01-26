@@ -13,8 +13,8 @@
 #include "Snap.h"
 
 public class feat_mat{
-	std::mat<std::string,int> all_pair_feat;
-	std::mat<std::string,int> edge_convert;
+	std::map<std::string,int> all_pair_feat;
+	std::map<std::string,int> edge_convert;
 
 	public:
 	void insert_a_p_f(std::string s){
@@ -28,7 +28,20 @@ public class feat_mat{
 			edge_convert[s] = 1;
 		else	edge_convert[s]++;
 	}
-	
+
+	int find_a_p_f(std::string s){
+		if(all_pair_feat.find(s)==all_pair_feat.end())
+			return 0;
+		else	return all_pair_feat[s];
+	}
+
+	int find_edge_convert(std::string s){
+		if(edge_convert.find(s)==edge_convert.end())
+			return 0;
+		else	return edge_convert[s];
+	}
+
+		
 };
 
 TUNGraph::TNodeI nodepointer(PUNGraph G, int u){
@@ -114,20 +127,24 @@ int find_last_link_time(PUNGraph G[], int u, int v, int t){
 	return 0;
 }
 
-double prediction(PUNGraph G[], int p, int t_p, std::map<std::string,std::vector<int> > link_time){
+double TV_distance(std::vector<double> X, std::vector<double> Y){
+	double sum = 0.0;
+	for(int i=0;i<(int)X.size();i++){
+		sum+=fabs(X[i]-Y[i]);
+	}
+	sum/=2;
+	return sum;
+}
+
+
+double prediction(PUNGraph G[], int p, int t_p){
 	//obtain node set...includes all nodes that appeared at least once till (t_predict-1)
 	int u,v,s_cnt,s_llt;
 	feat_mat G_s[t_p+1];
-	std::vector<int> nbrs_u;
-	std::vector<int> nbrs_v;
-	std::vector<int> node_list;
-	std::vector<int> node_list_t;
+	std::vector<int> node_list, nbrs_u, nbrs_v;
 	std::string f_str;	
-	//create feaure matrix for edges...
-	std::map<int,std::string> 
+	//create feaure matrix for edges... 
 	for(int i=1;i<t_p;i++){  
-		//considering graph G[i]
-		//find node list
 		TUNGraph::TNodeI NI;
 		for(NI=G[i]->BegNI();NI!=G[i]->EndNI();NI++)
 			node_list.push_back(NI.GetId());	
@@ -135,8 +152,8 @@ double prediction(PUNGraph G[], int p, int t_p, std::map<std::string,std::vector
 			for(k=j+1;k<node_list.size();k++){
 				u = node_list[j];
 				v = node_list[k];
-				nbrs_u = find_neighbors(G[i],u);
-				nbrs_v = find_neighbors(G[i],v);
+				nbrs_u = find_neighbors_over_time(G[i],u,p,t_p);
+				nbrs_v = find_neighbors_over_time(G[i],v,p,t_p);
 				s_cnt = find_intersection(nbrs_u,nbrs_v);
 				s_llt = find_last_link_time(G,u,v,i);
 				f_str = std::to_string(s_cnt)+","+std::to_string(s_llt);
@@ -149,9 +166,18 @@ double prediction(PUNGraph G[], int p, int t_p, std::map<std::string,std::vector
 	}
 	//predict edges.....
 	node_list_t = create_node_list(G,time_pred-1);
-	 
+	for(int i=0;i<(int)node_list_t.size()-1;i++){
+		for(int j=i;j<(int)node_list_t.size();j++){
+			u = node_list_t[i];
+			v = node_list_t[j];
+			nbrs_u = find_neighbors_over_time(G[i],u,p,t_p);
+			nbrs_v = find_neighbors_over_time(G[i],v,p,t_p);
+			s_cnt = find_intersection(nbrs_u,nbrs_v);
+			s_llt = find_last_link_time(G,u,v,i);
+			f_str = std::to_string(s_cnt)+","+std::to_string(s_llt);
+		}
+	}	 
 }
-
 
 int main (int argc, char* argv[]){
 
@@ -168,8 +194,6 @@ int main (int argc, char* argv[]){
 			continue;
 		else{	
 			t = t-1989;
-			//std::string e = std::to_string(u)+","+std::to_string(v);
-			//link_time[e].push_back(t);
 			if(!G[t]->IsNode(u))
 				G[t]->AddNode(u);
 			if(!G[t]->IsNode(v))
@@ -178,7 +202,8 @@ int main (int argc, char* argv[]){
 				G[t]->AddEdge(u,v);
 		}
 	}
-	in.close();	
+	in.close();
+	predict(G,p,t_p);	
 	return 0;
 }
 
