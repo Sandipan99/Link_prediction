@@ -8,9 +8,13 @@
 #include<fstream>
 #include<map>
 #include<string>
+#include<armadillo>
 #include<algorithm>
+#include<bits/stdc++.h>
 #include<vector>
 #include "Snap.h"
+
+typedef std::vector<std::pair<int,int> > vec_pair;
 
 public class feat_mat{
 	std::map<std::string,int> all_pair_feat;
@@ -96,6 +100,7 @@ int find_intersection(std::vector<int> &a, std::vector<int> &b){
 	return c.size();	
 }
 
+/*
 int count_common_neighbors(PUNGraph G[], int u, int v, int p, int t_p){  //counts the number of common neighbors between u and v, neighborhood includes 2-hop neighbors of last p time steps
 	std::vector<int> nbr_u;
 	std::vector<int> nbr_v;
@@ -104,16 +109,17 @@ int count_common_neighbors(PUNGraph G[], int u, int v, int p, int t_p){  //count
 	return find_intersection(nbr_u,nbr_v);	
 }
 
+
 std::vector<int> create_node_list(PUNGraph G[], int t, int p){
 	std::vector<int> nodes;
 	TUNGraph::TNodeI NI;
-	for(int i=p;i<=t,i++){
+	for(int i=t-p;i<=t,i++){
 		 for(NI=G[i]->BegNI();NI!=G[i]->EndNI();NI++)
 			nodes.push_back(NI.GetId());
 	}
 	nodes.erase(std::unique(nodes.begin(),nodes.end()),nodes.end());
 	return nodes;
-}
+}*/
 
 int find_last_link_time(PUNGraph G[], int u, int v, int t){
 	int i = t-1;
@@ -136,15 +142,51 @@ double TV_distance(std::vector<double> X, std::vector<double> Y){
 	return sum;
 }
 
+PUNGraph create_aggregate_graph(PUNGraph G[], int p, int t_p){
+	int u,v;
+	PUNGraph G_t = TUNGraph::New();
+	for(int i=t_p-p;i<t_p;i++){
+		TUNGraph::TEdgeI EI;
+		for(EI=G[i]->BegEI();EI!=G[i]->EndEI();EI++){
+			u = EI.GetSrcNId();
+			v = EI.GetDstNId();
+			if(!G_t->IsNode(u))
+				all_pairs.push_back(u);
+			if(!G_t->IsNode(v))
+				G_t->AddNode(v);
+			if(!G_t->IsEdge(u,v))
+				G_t->AddEdge(u,v);
+		}
+	}
+	return G_t;
+}
+
+vec_pair find_pairs(PUNGraph G){
+	vec_pair q_p;
+	std::vector<int> node_list, temp;
+	TUNGraph::TNodeI NI;
+	for(NI = G->BegNI();NI!=G->EndNI();NI++)
+		node_list.append(NI.GetId());
+	for(int i=0;i<(int)node_list.size();i++){
+		temp = find_neighbors(G,node_list[i]);
+		for(int j=0;j<(int)temp.size();j++)
+			q_p.push_back(std::make_pair(node_list[i],temp[j]));
+	} 
+	return q_p;
+}
 
 double prediction(PUNGraph G[], int p, int t_p){
 	//obtain node set...includes all nodes that appeared at least once till (t_predict-1)
+	PUNGraph G_t_p = TUNGraph::New();
+	G_t_p = create_aggregate_graph(G,p,t_p);
 	int u,v,s_cnt,s_llt;
+	int u
+	std::string q_s;
 	feat_mat G_s[t_p+1];
 	std::vector<int> node_list, nbrs_u, nbrs_v;
 	std::string f_str;	
 	//create feaure matrix for edges... 
-	for(int i=1;i<t_p;i++){  
+	for(int i=1;i<t_p-1;i++){  
 		TUNGraph::TNodeI NI;
 		for(NI=G[i]->BegNI();NI!=G[i]->EndNI();NI++)
 			node_list.push_back(NI.GetId());	
@@ -158,24 +200,34 @@ double prediction(PUNGraph G[], int p, int t_p){
 				s_llt = find_last_link_time(G,u,v,i);
 				f_str = std::to_string(s_cnt)+","+std::to_string(s_llt);
 				G_s[i].insert_a_p_f(f_str);
-				if(G[i]->IsEdge(u,v))
+				if(G[i+1]->IsEdge(u,v))
 					G_s[i].insert_e_c(f_str);
 			}
 		}
 		node_list.clear();
 	}
 	//predict edges.....
-	node_list_t = create_node_list(G,time_pred-1);
-	for(int i=0;i<(int)node_list_t.size()-1;i++){
-		for(int j=i;j<(int)node_list_t.size();j++){
-			u = node_list_t[i];
-			v = node_list_t[j];
-			nbrs_u = find_neighbors_over_time(G[i],u,p,t_p);
-			nbrs_v = find_neighbors_over_time(G[i],v,p,t_p);
-			s_cnt = find_intersection(nbrs_u,nbrs_v);
-			s_llt = find_last_link_time(G,u,v,i);
-			f_str = std::to_string(s_cnt)+","+std::to_string(s_llt);
+	
+	vec_pair query_pairs;
+	std::vector<int> nbrs_x,nbrs_y;
+	int x, y, x_cnt, x_llt;
+	query_pairs = find_pairs(G_t_p);
+	for(int i=0;i<(int)query_pairs.size()-1;i++){
+		u = query_pairs[i].first;
+		v = query_pairs[i].seccond;
+		nbrs_u = find_neighbors_over_time(G[i],u,1,t_p);
+		nbrs_v = find_neighbors_over_time(G[i],v,1,t_p);
+		s_cnt = find_intersection(nbrs_u,nbrs_v);
+		s_llt = find_last_link_time(G,u,v,i);
+		q_s = std::to_string(s_cnt)+","+std::to_string(s_llt);
+		//calculating d_i..... 
+		for(int j=0;j<(int)nbrs_u.size()-1;j++){
+			for(int k=j+1;k<(int)nbrs_u.size();k++){
+				nbrs_x = find_neighbors_over_time(G[])
+			}
 		}
+
+		// use TV to compare obtained s with all s to calculate probability of edge formation 
 	}	 
 }
 
