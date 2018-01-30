@@ -20,8 +20,13 @@ def obtain_graph(fname):
 
 def obtain_node_features(G,n):
 	L_mat = nx.normalized_laplacian_matrix(G)
-	w,v = sp.sparse.linalg.eigs(L_mat,n)
-	return v.real	
+	w,v = sp.sparse.linalg.eigs(L_mat,n,which='LM')
+	v = v.real
+	f_v = {}
+	nodes = G.nodes()
+	for i in xrange(len(nodes)):
+		f_v[nodes[i]] = v[i]
+	return w,f_v	
 
 def obtain_graph_single(fname, t_h):
 	G = nx.Graph()  #contains all edges

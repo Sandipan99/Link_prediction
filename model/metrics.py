@@ -4,14 +4,16 @@ from scipy import spatial
 def find_sample(G,G_t,u,nodes):
 	sample = []
 	nbr_g = nx.all_neighbors(G_t,u)
-	nbr_p = filter(lambda x:x not in nbr_g, nx.all_neighbors(G,u))
+	nbr_p = filter(lambda x:(x not in nbr_g)and(x in nodes), nx.all_neighbors(G,u))
 	cnt = t_h*len(nbr_p) - len(nbr_p)
-	while(cnt>0):
-		random.shuffle(nodes)
-		for n in nodes:
-			if (n!=u)and(n not in nbr_g)and(n not in nbr_p):
-				sample.append(n)
-				cnt--
+	random.shuffle(nodes)
+	for n in nodes:
+		if (n!=u)and(n not in nbr_g)and(n not in nbr_p):
+			sample.append(n)
+			cnt-=1
+			if cnt==0:
+				break
+		
 	sample = sample + nbr_p
 	return sample,len(nbr_p)
 
