@@ -51,6 +51,10 @@ def find_train_example(G_t,Q):
 
 if __name__=="__main__":
 
+	Q = 5
+	n = 5
+	decay = 0.8
+	l = 4
 	G,G_t = g.obtain_graph_single("Data/Facebook/facebook_combined.txt",0.25)
 	f_v = g.obtain_node_features(G_t,n)
 	W = tf.Variable(tf.random_normal([n,s])) #s is set by the user
