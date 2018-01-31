@@ -38,12 +38,12 @@ if __name__=="__main__":
 	
 	w,f_v = g.obtain_node_features(G_t,dim)
 
-	print w.real
-	print f_v[0],f_v[1]
+	#print w.real
+	#print f_v[0],f_v[1]
 
-	#node_vectors = Random_walk_kernel(G_t, length, decay, f_v, dim)
+	node_vectors = Random_walk_kernel(G_t, length, decay, f_v, dim)
 
-	#MAP = metrics.evaluate(G,G_t,node_vectors, t_h)	
+	MAP = metrics.evaluate(G,G_t,node_vectors, t_h)	
 	'''
 
 	G = nx.Graph()
