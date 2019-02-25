@@ -5,6 +5,29 @@ import graph as g
 import metrics
 import random
 
+
+class Random_walk_kernel(object):
+
+	def __init__(self,G,decay,f_v,nodes,l,n,N):
+
+		self.G = G
+		self.decay = decay
+		self.f_v = f_v
+		self.nodes = nodes
+		self.l = l
+		self.n = n
+		self.N = N
+
+		self.W = tf.Variable(tf.truncated_normal([self.n,self.N],mean=0,stddev=0.01))
+
+		self._inputs = tf.placeholder(tf.float32,
+                                      shape=[None, None, self.input_size],
+                                      name='inputs')
+
+		self.processed_input = process_batch_input_for_RNN(self._inputs)
+        self.initial_hidden = tf.matmul(
+            self.initial_hidden, tf.zeros([input_size, hidden_layer_size]))
+
 def Random_walk_kernel_NN(G, W, decay, f_v, nodes, l, n):
         state_vector = {}
 	for i in xrange(len(nodes)):
@@ -65,7 +88,7 @@ if __name__=="__main__":
 	G,G_t = g.obtain_graph_single("Data/Facebook/facebook_combined.txt",0.25)
         print "nodes in G ",len(G.nodes())
 	f_v = g.obtain_features(G,n)
-        f = tf.constant(f_v.real)
+    f = tf.constant(f_v.real)
         #print f.dtype
 	W = tf.Variable(tf.random_uniform([n,s],dtype=tf.float64)) #s is set by the user
         #print W.dtype
